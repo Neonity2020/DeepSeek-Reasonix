@@ -189,6 +189,7 @@ type InMessage = { tabId?: string } & (
       ollamaApiKey?: string | null;
       braveApiKey?: string | null;
       subagentModels?: Record<string, "flash" | "pro">;
+      contextTokens?: Record<string, number>;
       showSystemEvents?: boolean;
       promptHistory?: string[];
     }
@@ -256,6 +257,7 @@ interface SettingsEvent {
     ollama?: string;
   };
   subagentModels?: Record<string, "flash" | "pro">;
+  contextTokens?: Record<string, number>;
   showSystemEvents?: boolean;
   promptHistory?: string[];
   version: string;
@@ -758,6 +760,7 @@ function emitSettings(tab: Tab): void {
       webSearchEndpoint: readConfig().webSearchEndpoint,
       webSearchApiKeys: collectWebSearchApiKeyPrefixes(),
       subagentModels: loadSubagentModels(),
+      contextTokens: readConfig().contextTokens,
       showSystemEvents: loadShowSystemEvents(),
       promptHistory: loadPromptHistory(),
       version: VERSION,
@@ -2837,6 +2840,11 @@ export async function desktopCommand(opts: DesktopOptions): Promise<void> {
         if (msg.subagentModels !== undefined) {
           saveSubagentModels(msg.subagentModels);
           emitSkills(tab);
+        }
+        if (msg.contextTokens !== undefined) {
+          const cfg = readConfig();
+          cfg.contextTokens = msg.contextTokens;
+          writeConfig(cfg);
         }
         if (msg.model !== undefined) {
           const next = msg.model.trim();
